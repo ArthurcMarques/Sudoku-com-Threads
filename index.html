@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Sudoku - Multithreading</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Validador de Solução de Sudoku</h1>
+            <p class="subtitle">Utilizando 27 Threads em Paralelo</p>
+            <div class="university-info">
+                <p><strong>Pontifícia Universidade Católica de Goiás</strong></p>
+                <p>Escola Politécnica e de Artes</p>
+                <p>CMP2351 - Sistemas Operacionais I</p>
+            </div>
+        </header>
+
+        <main>
+            <!-- Grid do Sudoku -->
+            <section class="sudoku-section">
+                <h2>Grid do Sudoku (9×9)</h2>
+                <div class="sudoku-grid" id="sudokuGrid">
+                    <!-- Grid será gerado dinamicamente -->
+                </div>
+                
+                <div class="button-group">
+                    <button id="btnValidate" class="btn btn-primary">
+                        ⚡ Validar com Threads
+                    </button>
+                    <button id="btnLoadExample" class="btn btn-secondary">
+                        📋 Carregar Exemplo Válido
+                    </button>
+                    <button id="btnLoadInvalid" class="btn btn-secondary">
+                        ❌ Carregar Exemplo Inválido
+                    </button>
+                    <button id="btnClear" class="btn btn-secondary">
+                        🗑️ Limpar Grid
+                    </button>
+                </div>
+            </section>
+
+            <!-- Painel de Monitoramento -->
+            <section class="monitoring-section">
+                <h2>📊 Monitoramento de Threads</h2>
+                
+                <!-- Estatísticas Gerais -->
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-label">Threads Ativas</div>
+                        <div class="stat-value" id="activeThreads">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Threads Finalizadas</div>
+                        <div class="stat-value" id="completedThreads">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tempo Total</div>
+                        <div class="stat-value" id="totalTime">0ms</div>
+                    </div>
+                </div>
+
+                <!-- Status das Threads -->
+                <div class="thread-status">
+                    <div class="thread-category">
+                        <h3>🔵 Validação de Colunas (9 Threads)</h3>
+                        <div class="thread-list" id="columnThreads"></div>
+                    </div>
+                    
+                    <div class="thread-category">
+                        <h3>🟢 Validação de Linhas (9 Threads)</h3>
+                        <div class="thread-list" id="rowThreads"></div>
+                    </div>
+                    
+                    <div class="thread-category">
+                        <h3>🟡 Validação de Subgrids 3×3 (9 Threads)</h3>
+                        <div class="thread-list" id="subgridThreads"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resultado Final -->
+            <section class="result-section" id="resultSection" style="display: none;">
+                <div class="result-card" id="resultCard">
+                    <div class="result-icon" id="resultIcon"></div>
+                    <h2 id="resultTitle"></h2>
+                    <p id="resultMessage"></p>
+                    <div class="result-details" id="resultDetails"></div>
+                </div>
+            </section>
+
+            <!-- Log de Execução -->
+            <section class="log-section">
+                <h2>📝 Log de Execução</h2>
+                <div class="log-container" id="logContainer">
+                    <p class="log-empty">Aguardando validação...</p>
+                </div>
+                <button id="btnClearLog" class="btn btn-small">Limpar Log</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 - Projeto Acadêmico | Desenvolvido com Web Workers (Threads JavaScript)</p>
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
