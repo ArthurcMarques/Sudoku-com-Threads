@@ -19,6 +19,13 @@ class SudokuValidator {
         this.startTime = 0;
         this.activeThreadCount = 0;
         this.completedThreadCount = 0;
+        this.isValidating = false;
+        
+        // Estado do gerador
+        this.currentPuzzle = null;
+        this.currentSolution = null;
+        this.currentDifficulty = 'easy';
+        this.isPlayingMode = false;
         
         // Configuração
         this.TOTAL_THREADS = 27; // 9 colunas + 9 linhas + 9 subgrids
@@ -54,6 +61,8 @@ class SudokuValidator {
             input.max = '9';
             input.maxLength = '1';
             input.dataset.index = i;
+            input.dataset.row = Math.floor(i / 9);
+            input.dataset.col = i % 9;
             
             // Validação de entrada
             input.addEventListener('input', (e) => this.handleCellInput(e));
@@ -64,7 +73,7 @@ class SudokuValidator {
     }
     
     /**
-     * Valida entrada da célula
+     * Valida entrada da célula e dispara validação automática
      */
     handleCellInput(event) {
         const input = event.target;
@@ -79,17 +88,48 @@ class SudokuValidator {
         }
         
         input.value = value;
+        
+        // Verifica se o grid está completo e dispara validação automática
+        setTimeout(() => {
+            this.checkAndAutoValidate();
+        }, 300);
+    }
+    
+    /**
+     * Verifica se o grid está completo e valida automaticamente
+     */
+    async checkAndAutoValidate() {
+        const grid = this.readGridFromUI();
+        
+        // Verifica se todas as células estão preenchidas
+        const isComplete = grid.every(row => 
+            row.every(cell => cell >= 1 && cell <= 9)
+        );
+        
+        if (isComplete && !this.isValidating) {
+            this.addLog('✨ Grid completo! Iniciando validação automática...', 'info');
+            await this.validateSudoku();
+        }
     }
     
     /**
      * Configura event listeners
      */
     setupEventListeners() {
-        document.getElementById('btnValidate').addEventListener('click', () => this.validateSudoku());
         document.getElementById('btnLoadExample').addEventListener('click', () => this.loadValidExample());
         document.getElementById('btnLoadInvalid').addEventListener('click', () => this.loadInvalidExample());
         document.getElementById('btnClear').addEventListener('click', () => this.clearGrid());
         document.getElementById('btnClearLog').addEventListener('click', () => this.clearLog());
+        
+        // Event listeners do gerador
+        document.getElementById('btnGenerate').addEventListener('click', () => this.generateSudoku());
+        document.getElementById('btnShowSolution').addEventListener('click', () => this.showSolution());
+        document.getElementById('btnCheckProgress').addEventListener('click', () => this.checkProgress());
+        
+        // Seletor de dificuldade
+        document.querySelectorAll('.btn-difficulty').forEach(btn => {
+            btn.addEventListener('click', (e) => this.selectDifficulty(e.target.closest('.btn-difficulty')));
+        });
     }
     
     /**
@@ -135,24 +175,27 @@ class SudokuValidator {
      * Cria e gerencia as 27 threads
      */
     async validateSudoku() {
+        // Previne validações duplicadas
+        if (this.isValidating) {
+            return;
+        }
+        
         // Lê o grid atual
         this.grid = this.readGridFromUI();
         
         // Valida se o grid está preenchido
         if (!this.isGridComplete()) {
-            alert('⚠️ Por favor, preencha todo o grid antes de validar!');
+            // Não mostra alerta, apenas ignora silenciosamente
             return;
         }
+        
+        // Marca como validando
+        this.isValidating = true;
         
         // Reseta estado
         this.resetValidation();
         
-        // Desabilita botão de validação
-        const btnValidate = document.getElementById('btnValidate');
-        btnValidate.disabled = true;
-        btnValidate.textContent = '⏳ Validando...';
-        
-        this.addLog('🚀 Iniciando validação com 27 threads em paralelo...', 'info');
+        this.addLog('🚀 Iniciando validação automática com 27 threads em paralelo...', 'info');
         this.startTime = performance.now();
         
         try {
@@ -168,8 +211,7 @@ class SudokuValidator {
         } catch (error) {
             this.addLog(`❌ Erro durante validação: ${error.message}`, 'error');
         } finally {
-            btnValidate.disabled = false;
-            btnValidate.textContent = '⚡ Validar com Threads';
+            this.isValidating = false;
         }
     }
     
@@ -500,6 +542,11 @@ class SudokuValidator {
         
         this.writeGridToUI(validGrid);
         this.addLog('✅ Exemplo válido carregado com sucesso!', 'success');
+        
+        // Dispara validação automática após pequeno delay
+        setTimeout(() => {
+            this.checkAndAutoValidate();
+        }, 500);
     }
     
     /**
@@ -520,6 +567,11 @@ class SudokuValidator {
         
         this.writeGridToUI(invalidGrid);
         this.addLog('⚠️ Exemplo inválido carregado (última linha tem erro)', 'warning');
+        
+        // Dispara validação automática após pequeno delay
+        setTimeout(() => {
+            this.checkAndAutoValidate();
+        }, 500);
     }
     
     /**
@@ -560,6 +612,254 @@ class SudokuValidator {
     clearLog() {
         const logContainer = document.getElementById('logContainer');
         logContainer.innerHTML = '<p class="log-empty">Log limpo. Aguardando validação...</p>';
+    }
+    
+    // ============================================
+    // FUNÇÕES DO GERADOR DE SUDOKU
+    // ============================================
+    
+    /**
+     * Seleciona dificuldade
+     */
+    selectDifficulty(button) {
+        // Remove active de todos
+        document.querySelectorAll('.btn-difficulty').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Adiciona active no selecionado
+        button.classList.add('active');
+        this.currentDifficulty = button.dataset.difficulty;
+        
+        this.addLog(`🎯 Dificuldade selecionada: ${this.getDifficultyName()}`, 'info');
+    }
+    
+    /**
+     * Retorna nome da dificuldade
+     */
+    getDifficultyName() {
+        const names = {
+            'easy': 'Fácil',
+            'medium': 'Médio',
+            'hard': 'Difícil',
+            'expert': 'Expert'
+        };
+        return names[this.currentDifficulty];
+    }
+    
+    /**
+     * Gera novo Sudoku
+     */
+    async generateSudoku() {
+        const btnGenerate = document.getElementById('btnGenerate');
+        btnGenerate.disabled = true;
+        btnGenerate.textContent = '⏳ Gerando...';
+        
+        this.addLog('🎲 Iniciando geração de Sudoku...', 'info');
+        this.addLog(`📊 Dificuldade: ${this.getDifficultyName()}`, 'info');
+        
+        try {
+            const result = await this.generateWithWorker();
+            
+            this.currentPuzzle = result.puzzle;
+            this.currentSolution = result.solution;
+            this.isPlayingMode = true;
+            
+            // Carrega o puzzle no grid
+            this.loadPuzzleToGrid(result.puzzle);
+            
+            // Mostra botões de ajuda
+            document.getElementById('btnShowSolution').style.display = 'inline-block';
+            document.getElementById('btnCheckProgress').style.display = 'inline-block';
+            
+            this.addLog(`✅ Sudoku gerado com sucesso!`, 'success');
+            this.addLog(`📋 ${result.cellsRemoved} células vazias para você preencher`, 'info');
+            this.addLog(`⏱️ Tempo de geração: ${result.executionTime}ms`, 'info');
+            this.addLog('🎮 Preencha as células em branco e valide sua solução!', 'info');
+            
+        } catch (error) {
+            this.addLog(`❌ Erro ao gerar Sudoku: ${error.message}`, 'error');
+        } finally {
+            btnGenerate.disabled = false;
+            btnGenerate.textContent = '🎲 Gerar Novo Sudoku';
+        }
+    }
+    
+    /**
+     * Gera Sudoku usando Web Worker
+     */
+    generateWithWorker() {
+        return new Promise((resolve, reject) => {
+            const worker = new Worker('js/generator-worker.js');
+            
+            worker.onmessage = (event) => {
+                const { status, puzzle, solution, difficulty, cellsRemoved, executionTime, message } = event.data;
+                
+                if (status === 'SUCCESS') {
+                    resolve({ puzzle, solution, difficulty, cellsRemoved, executionTime });
+                } else {
+                    reject(new Error(message || 'Erro desconhecido'));
+                }
+                
+                worker.terminate();
+            };
+            
+            worker.onerror = (error) => {
+                reject(error);
+                worker.terminate();
+            };
+            
+            worker.postMessage({
+                difficulty: this.currentDifficulty
+            });
+        });
+    }
+    
+    /**
+     * Carrega puzzle no grid com células bloqueadas
+     */
+    loadPuzzleToGrid(puzzle) {
+        const inputs = document.querySelectorAll('.sudoku-cell input');
+        
+        puzzle.forEach((row, rowIndex) => {
+            row.forEach((value, colIndex) => {
+                const index = rowIndex * 9 + colIndex;
+                const input = inputs[index];
+                const cell = input.parentElement;
+                
+                // Remove classes anteriores
+                cell.classList.remove('prefilled', 'user-input', 'error', 'correct');
+                
+                if (value !== 0) {
+                    // Célula pré-preenchida (não editável)
+                    input.value = value;
+                    input.readOnly = true;
+                    cell.classList.add('prefilled');
+                } else {
+                    // Célula vazia (editável)
+                    input.value = '';
+                    input.readOnly = false;
+                    cell.classList.add('user-input');
+                }
+            });
+        });
+    }
+    
+    /**
+     * Mostra a solução completa
+     */
+    showSolution() {
+        if (!this.currentSolution) {
+            alert('⚠️ Nenhum puzzle foi gerado ainda!');
+            return;
+        }
+        
+        const confirm = window.confirm('🤔 Tem certeza que deseja ver a solução?\n\nIsso revelará todas as respostas!');
+        
+        if (!confirm) {
+            return;
+        }
+        
+        this.writeGridToUI(this.currentSolution);
+        
+        // Desabilita todas as células
+        const inputs = document.querySelectorAll('.sudoku-cell input');
+        inputs.forEach(input => {
+            input.readOnly = true;
+            input.parentElement.classList.add('prefilled');
+            input.parentElement.classList.remove('user-input');
+        });
+        
+        this.addLog('💡 Solução completa exibida!', 'warning');
+        this.addLog('🔒 Todas as células foram bloqueadas', 'info');
+        
+        // Esconde botões de ajuda
+        document.getElementById('btnShowSolution').style.display = 'none';
+        document.getElementById('btnCheckProgress').style.display = 'none';
+    }
+    
+    /**
+     * Verifica progresso sem validar completamente
+     */
+    checkProgress() {
+        if (!this.currentSolution) {
+            alert('⚠️ Nenhum puzzle foi gerado ainda!');
+            return;
+        }
+        
+        const currentGrid = this.readGridFromUI();
+        const inputs = document.querySelectorAll('.sudoku-cell input');
+        
+        let correct = 0;
+        let incorrect = 0;
+        let empty = 0;
+        
+        currentGrid.forEach((row, rowIndex) => {
+            row.forEach((value, colIndex) => {
+                const index = rowIndex * 9 + colIndex;
+                const input = inputs[index];
+                const cell = input.parentElement;
+                
+                // Só verifica células editáveis
+                if (!input.readOnly) {
+                    if (value === 0) {
+                        empty++;
+                        cell.classList.remove('error', 'correct');
+                    } else if (value === this.currentSolution[rowIndex][colIndex]) {
+                        correct++;
+                        cell.classList.add('correct');
+                        cell.classList.remove('error');
+                    } else {
+                        incorrect++;
+                        cell.classList.add('error');
+                        cell.classList.remove('correct');
+                    }
+                }
+            });
+        });
+        
+        const total = correct + incorrect + empty;
+        const percentage = ((correct / total) * 100).toFixed(1);
+        
+        this.addLog('', 'info');
+        this.addLog('📊 VERIFICAÇÃO DE PROGRESSO', 'info');
+        this.addLog('═══════════════════════════', 'info');
+        this.addLog(`✅ Corretas: ${correct}`, 'success');
+        this.addLog(`❌ Incorretas: ${incorrect}`, incorrect > 0 ? 'error' : 'info');
+        this.addLog(`⬜ Vazias: ${empty}`, 'info');
+        this.addLog(`📈 Progresso: ${percentage}%`, 'info');
+        
+        if (incorrect === 0 && empty === 0) {
+            this.addLog('', 'info');
+            this.addLog('🎉 PARABÉNS! Todas as células estão corretas!', 'success');
+            this.addLog('Clique em "Validar com Threads" para verificação final!', 'success');
+        } else if (incorrect > 0) {
+            this.addLog('', 'info');
+            this.addLog('💡 Células em vermelho estão incorretas. Tente novamente!', 'warning');
+        }
+    }
+    
+    /**
+     * Limpa o grid e reseta modo de jogo
+     */
+    clearGrid() {
+        const inputs = document.querySelectorAll('.sudoku-cell input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.readOnly = false;
+            const cell = input.parentElement;
+            cell.classList.remove('prefilled', 'user-input', 'error', 'correct');
+        });
+        
+        this.currentPuzzle = null;
+        this.currentSolution = null;
+        this.isPlayingMode = false;
+        
+        // Esconde botões de ajuda
+        document.getElementById('btnShowSolution').style.display = 'none';
+        document.getElementById('btnCheckProgress').style.display = 'none';
+        
+        this.addLog('🗑️ Grid limpo', 'info');
     }
 }
 

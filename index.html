@@ -27,9 +27,6 @@
                 </div>
                 
                 <div class="button-group">
-                    <button id="btnValidate" class="btn btn-primary">
-                        ⚡ Validar com Threads
-                    </button>
                     <button id="btnLoadExample" class="btn btn-secondary">
                         📋 Carregar Exemplo Válido
                     </button>
@@ -38,6 +35,52 @@
                     </button>
                     <button id="btnClear" class="btn btn-secondary">
                         🗑️ Limpar Grid
+                    </button>
+                </div>
+                
+                <div class="auto-validation-info">
+                    <p>
+                        ✨ <strong>Validação Automática Ativada!</strong><br>
+                        <small>A validação com 27 threads será executada automaticamente quando todas as células estiverem preenchidas.</small>
+                    </p>
+                </div>
+                
+                <!-- Seção de Gerador de Sudoku -->
+                <div class="generator-section">
+                    <h3>🎮 Gerar Sudoku para Resolver</h3>
+                    <p class="generator-description">
+                        Gere um Sudoku parcialmente preenchido e tente completá-lo!
+                        Depois, valide sua solução com as 27 threads.
+                    </p>
+                    <div class="difficulty-selector">
+                        <label>Escolha a dificuldade:</label>
+                        <div class="difficulty-buttons">
+                            <button class="btn-difficulty active" data-difficulty="easy">
+                                😊 Fácil<br>
+                                <small>(40 células vazias)</small>
+                            </button>
+                            <button class="btn-difficulty" data-difficulty="medium">
+                                🤔 Médio<br>
+                                <small>(50 células vazias)</small>
+                            </button>
+                            <button class="btn-difficulty" data-difficulty="hard">
+                                😰 Difícil<br>
+                                <small>(60 células vazias)</small>
+                            </button>
+                            <button class="btn-difficulty" data-difficulty="expert">
+                                🔥 Expert<br>
+                                <small>(65 células vazias)</small>
+                            </button>
+                        </div>
+                    </div>
+                    <button id="btnGenerate" class="btn btn-success">
+                        🎲 Gerar Novo Sudoku
+                    </button>
+                    <button id="btnShowSolution" class="btn btn-hint" style="display: none;">
+                        💡 Mostrar Solução
+                    </button>
+                    <button id="btnCheckProgress" class="btn btn-hint" style="display: none;">
+                        📊 Verificar Progresso
                     </button>
                 </div>
             </section>

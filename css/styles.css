@@ -158,6 +158,33 @@ main h2 {
     background: #fee2e2;
 }
 
+/* Células pré-preenchidas (não editáveis) */
+.sudoku-cell.prefilled input {
+    background: #f1f5f9;
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: not-allowed;
+}
+
+/* Células do usuário (editáveis) */
+.sudoku-cell.user-input input {
+    background: white;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Célula com erro */
+.sudoku-cell.error input {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Célula correta */
+.sudoku-cell.correct input {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 /* ===================================
    BOTÕES
    =================================== */
@@ -207,9 +234,139 @@ main h2 {
     margin-top: 10px;
 }
 
+/* ===================================
+   GERADOR DE SUDOKU
+   =================================== */
+.generator-section {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.generator-section h3 {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    border: none;
+    padding: 0;
+}
+
+.generator-description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.difficulty-selector {
+    margin-bottom: 20px;
+}
+
+.difficulty-selector label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.difficulty-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-difficulty {
+    padding: 15px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.btn-difficulty small {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.btn-difficulty:hover {
+    border-color: var(--primary-color);
+    background: #eff6ff;
+    transform: translateY(-2px);
+}
+
+.btn-difficulty.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-difficulty.active small {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Aviso de validação automática */
+.auto-validation-info {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 2px solid var(--success-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.auto-validation-info p {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.auto-validation-info strong {
+    color: var(--success-color);
+    font-size: 1.1rem;
+}
+
+.auto-validation-info small {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+    font-size: 1.1rem;
+    padding: 15px 30px;
+}
+
+.btn-success:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-hint {
+    background: var(--warning-color);
+    color: white;
+    margin-left: 10px;
+}
+
+.btn-hint:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 /* ===================================
