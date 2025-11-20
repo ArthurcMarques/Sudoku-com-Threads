@@ -6,6 +6,10 @@
 **Escola:** Escola Politecnica e de Artes  
 **Disciplina:** CMP2351 - Sistemas Operacionais I  
 **Professora:** Angelica da Silva Nunes  
+**Alunos Responsaveis:**  
+- Arthur Cardoso Marques  
+- Maria Rita Verissimo  
+- Jennifer Vitoria da Silva Peixoto  
 **Projeto:** AED - Validador de Solucao de Sudoku
 
 ---
