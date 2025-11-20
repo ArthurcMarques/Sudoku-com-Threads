@@ -1,16 +1,16 @@
-# 🎯 Validador de Solução de Sudoku com Multithreading
+﻿# Validador de Solucao de Sudoku com Multithreading
 
-## 📚 Informações Acadêmicas
+## Informacoes Academicas
 
-**Universidade:** Pontifícia Universidade Católica de Goiás  
-**Escola:** Escola Politécnica e de Artes  
+**Universidade:** Pontificia Universidade Catolica de Goias  
+**Escola:** Escola Politecnica e de Artes  
 **Disciplina:** CMP2351 - Sistemas Operacionais I  
-**Professora:** Angélica da Silva Nunes  
-**Projeto:** AED - Validador de Solução de Sudoku  
+**Professora:** Angelica da Silva Nunes  
+**Projeto:** AED - Validador de Solucao de Sudoku
 
 ---
 
-## 📋 Índice
+## Indice
 
 1. [Sobre o Projeto](#sobre-o-projeto)
 2. [Conceitos de Paralelismo Aplicados](#conceitos-de-paralelismo-aplicados)
@@ -19,603 +19,362 @@
 5. [Estrutura de Arquivos](#estrutura-de-arquivos)
 6. [Como Executar](#como-executar)
 7. [Como Usar](#como-usar)
-8. [Implementação Técnica](#implementação-técnica)
-9. [Decisões de Design](#decisões-de-design)
-10. [Possíveis Melhorias](#possíveis-melhorias)
+8. [Implementacao Tecnica](#implementacao-tecnica)
+9. [Decisoes de Design](#decisoes-de-design)
+10. [Possiveis Melhorias](#possiveis-melhorias)
 
 ---
 
-## 🎓 Sobre o Projeto
+## Sobre o Projeto
 
-Este projeto implementa um **validador de soluções de Sudoku** utilizando **programação paralela com múltiplas threads**. O objetivo é demonstrar os conceitos de paralelismo através de uma aplicação web prática e visual.
+Este projeto implementa um **validador de solucoes de Sudoku** com **27 threads (Web Workers) em paralelo**. A interface gera um desafio aleatorio a cada carregamento, permite edicao das celulas livres e mostra, em tempo real, o status de cada thread responsavel pelas linhas, colunas e sub-grades.
 
 ### Requisitos do Sudoku
 
-Um quebra-cabeça Sudoku válido deve atender aos seguintes critérios:
+Um tabuleiro valido precisa garantir:
 
-- ✅ Cada **coluna** deve conter todos os dígitos de 1 a 9 (sem repetição)
-- ✅ Cada **linha** deve conter todos os dígitos de 1 a 9 (sem repetição)
-- ✅ Cada **subgrid 3×3** deve conter todos os dígitos de 1 a 9 (sem repetição)
-
-### Exemplo de Sudoku Válido
-
-```
-6 2 4 | 5 3 9 | 1 8 7
-5 1 9 | 7 2 8 | 6 3 4
-8 3 7 | 6 1 4 | 2 9 5
-------+-------+------
-1 4 3 | 8 6 5 | 7 2 9
-9 5 8 | 2 4 7 | 3 6 1
-7 6 2 | 3 9 1 | 4 5 8
-------+-------+------
-3 7 1 | 9 5 6 | 8 4 2
-4 9 6 | 1 8 2 | 5 7 3
-2 8 5 | 4 7 3 | 9 1 6
-```
+- Cada **coluna** contem os digitos 1 a 9 sem repeticao.
+- Cada **linha** contem os digitos 1 a 9 sem repeticao.
+- Cada **sub-grade 3x3** contem os digitos 1 a 9 sem repeticao.
 
 ---
 
-## 🧵 Conceitos de Paralelismo Aplicados
+## Conceitos de Paralelismo Aplicados
 
-### O que são Threads?
+### O que sao Threads?
 
-**Thread** (linha de execução) é a menor unidade de processamento que pode ser agendada por um sistema operacional. Em vez de processar tarefas sequencialmente, múltiplas threads permitem executar várias tarefas **simultaneamente**, aproveitando melhor os recursos do processador.
+**Thread** e a menor unidade de processamento agendada pelo sistema operacional. Ao usar multiplas threads, tarefas independentes podem ocorrer simultaneamente, aproveitando melhor os nucleos da CPU.
 
-### Implementação no Projeto
+### Implementacao no Projeto
 
-Este projeto utiliza **27 threads trabalhando em paralelo**:
+Este projeto dispara **27 threads em paralelo** para validar todo o tabuleiro.
 
-#### 📊 Distribuição das Threads
-
-| Tipo de Validação | Quantidade | Descrição |
+| Tipo de Validacao | Quantidade | Descricao |
 |-------------------|------------|-----------|
-| **Colunas** | 9 threads | Uma thread para cada uma das 9 colunas |
-| **Linhas** | 9 threads | Uma thread para cada uma das 9 linhas |
-| **Subgrids 3×3** | 9 threads | Uma thread para cada um dos 9 subgrids |
-| **TOTAL** | **27 threads** | Todas executam em paralelo |
+| **Colunas** | 9 threads | Uma thread para cada coluna |
+| **Linhas** | 9 threads | Uma thread para cada linha |
+| **Sub-grades 3x3** | 9 threads | Uma thread para cada sub-grade |
+| **TOTAL** | **27 threads** | Executando em paralelo |
 
 ### Vantagens do Paralelismo
 
-1. **Performance:** 27 validações acontecem simultaneamente
-2. **Eficiência:** Melhor aproveitamento dos núcleos do processador
-3. **Escalabilidade:** Fácil adicionar mais validações
-4. **Isolamento:** Cada thread trabalha independentemente
+1. **Performance:** 27 validacoes rodando simultaneamente.
+2. **Eficiencia:** Melhor uso dos nucleos disponiveis.
+3. **Escalabilidade:** Facil extender regras ou novas checagens.
+4. **Isolamento:** Cada unidade e analisada separadamente.
 
 ### Web Workers - Threads no Navegador
 
-No navegador, as threads são implementadas através de **Web Workers**, que permitem:
+No navegador, as threads sao implementadas com **Web Workers**, permitindo:
 
-- ✅ Execução de código JavaScript em threads separadas
-- ✅ Comunicação assíncrona via mensagens
-- ✅ Isolamento de contexto (cada worker tem seu próprio escopo)
-- ✅ Processamento paralelo real em CPUs multi-core
+- Execucao de JavaScript em threads separadas.
+- Comunicacao assincrona via `postMessage`.
+- Isolamento de contexto entre workers.
+- Processamento paralelo real em CPUs multi-core.
 
 ---
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
-### Diagrama de Componentes
+### Visao Geral
 
-```
-┌─────────────────────────────────────────────────┐
-│            INTERFACE WEB (HTML/CSS)             │
-│  - Grid de entrada 9×9                          │
-│  - Painel de monitoramento                      │
-│  - Log de execução                              │
-└─────────────────┬───────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────┐
-│         CONTROLADOR PRINCIPAL (main.js)         │
-│  - Gerenciamento de estado                      │
-│  - Criação de workers                           │
-│  - Coleta de resultados                         │
-│  - Atualização da UI                            │
-└─────────────────┬───────────────────────────────┘
-                  │
-      ┌───────────┴───────────┐
-      │                       │
-┌─────▼─────┐         ┌───────▼────────┐
-│  WORKERS  │   ...   │    WORKERS     │
-│  (Thread) │         │    (Thread)    │
-│           │         │                │
-│ Validação │         │   Validação    │
-│ Coluna 1  │         │   Subgrid 9    │
-└───────────┘         └────────────────┘
-     (27 workers executando em paralelo)
-```
+- **Interface (index.html + styles.css):** constroi o tabuleiro 9x9, botoes de controle e painel de monitoramento.
+- **Orquestracao (script.js):** gera desafios aleatorios, controla estado, dispara e consolida os resultados das threads.
+- **Validacao paralela (validatorWorker.js):** cada worker analisa apenas sua unidade (linha, coluna ou sub-grade) e devolve conflitos encontrados.
 
-### Fluxo de Execução
+### Fluxo de Execucao
 
 ```
-1. Usuário clica em "Validar"
-   ↓
-2. Sistema lê o grid 9×9
-   ↓
-3. Cria 27 Web Workers (threads)
-   ↓
-4. Cada worker valida sua região específica
-   ↓
-5. Workers executam em PARALELO
-   ↓
-6. Resultados são coletados
-   ↓
-7. Análise final: Sudoku válido ou inválido?
-   ↓
-8. Exibe resultado na interface
+1. Usuario clica em "Rodar Threads".
+2. A interface coleta os 81 valores do tabuleiro.
+3. Sao criados 27 Web Workers (9 linhas, 9 colunas, 9 sub-grades).
+4. Cada worker valida sua fatia do tabuleiro em paralelo.
+5. Resultados retornam com posicoes e tipos de conflito.
+6. A UI destaca celulas problematicas e registra o tempo de cada thread.
+7. Se nenhuma thread reportar conflito, o tabuleiro e considerado valido.
 ```
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Frontend
 
-- **HTML5:** Estrutura semântica da aplicação
-- **CSS3:** Estilização moderna e responsiva
-  - Flexbox e Grid Layout
-  - Animações e transições
-  - Design responsivo
-- **JavaScript (ES6+):** Lógica da aplicação
-  - Classes e módulos
-  - Promises e async/await
-  - Web Workers API
+- **HTML5:** Estrutura da aplicacao.
+- **CSS3:** Estilizacao moderna e responsiva (Grid e Flexbox).
+- **JavaScript (ES6+):** Logica e controle das threads.
 
 ### Conceitos Aplicados
 
-- ✅ **Programação Orientada a Objetos**
-- ✅ **Princípios SOLID**
-- ✅ **Clean Code**
-- ✅ **Programação Assíncrona**
-- ✅ **Comunicação entre Threads**
-- ✅ **Event-Driven Architecture**
+- **Programacao Orientada a Objetos** (quando aplicavel).
+- **Programacao Assincrona** com Promises e `postMessage`.
+- **Comunicacao entre Threads** (Web Workers).
+- **Event-Driven Architecture** para respostas da UI.
 
 ---
 
-## 📁 Estrutura de Arquivos
+## Estrutura de Arquivos
 
 ```
-sudoku-validator/
-│
-├── index.html                 # Página principal da aplicação
-│
-├── css/
-│   └── styles.css            # Estilos CSS completos
-│
-├── js/
-│   ├── main.js               # Controlador principal
-│   └── validator-worker.js   # Web Worker (thread)
-│
-└── README.md                  # Esta documentação
+Sudoku_Threads/
++-- index.html            # Pagina principal e markup do tabuleiro
++-- styles.css            # Estilos e layout
++-- script.js             # Gera desafios e orquestra 27 threads
++-- validatorWorker.js    # Web Worker que valida cada unidade
 ```
 
-### Descrição dos Arquivos
+### Descricao dos Arquivos
 
 #### `index.html`
-- Estrutura HTML da aplicação
-- Grid 9×9 para entrada de dados
-- Painéis de monitoramento
-- Log de execução em tempo real
+- Grid 9x9 construido dinamicamente.
+- Botoes para novo desafio, reset, limpar livres e disparar threads.
+- Painel de monitoramento das threads.
 
-#### `css/styles.css`
-- Design moderno e profissional
-- Responsivo para mobile, tablet e desktop
-- Animações e feedback visual
-- Tema de cores consistente
+#### `styles.css`
+- Tema escuro com gradiente e destaques para celulas invalidas.
+- Layout responsivo para desktop e mobile.
+- Estilos do painel de threads e banners de status.
 
-#### `js/main.js`
-- Classe principal `SudokuValidator`
-- Gerenciamento de estado
-- Criação e gerenciamento de workers
-- Atualização da interface
-- Coleta e análise de resultados
+#### `script.js`
+- Gera uma solucao completa e mascara celulas para criar desafios aleatorios.
+- Controla estado de celulas bloqueadas e editaveis.
+- Dispara 27 Web Workers na validacao completa e 3 workers ao digitar (linha/coluna/sub-grade da celula).
+- Destaca conflitos (duplicados, valores invalidos ou vazios) e registra o tempo de cada thread.
 
-#### `js/validator-worker.js`
-- Lógica de validação em thread separada
-- Funções para validar colunas, linhas e subgrids
-- Comunicação assíncrona com thread principal
+#### `validatorWorker.js`
+- Validacao isolada por unidade.
+- Retorna `invalidPositions` com o tipo de problema (`duplicate`, `invalid`, `empty`).
+- Suporta modo `ignoreEmpty` para checagens em tempo real sem exigir o tabuleiro completo.
 
 ---
 
-## 🚀 Como Executar
+## Como Executar
 
-### Pré-requisitos
+### Pre-requisitos
 
-- Navegador web moderno (Chrome, Firefox, Edge, Safari)
-- Servidor web local (obrigatório para Web Workers)
+- Navegador moderno (Chrome, Firefox, Edge, Safari).
+- Servidor web local (Web Workers nao funcionam via `file://`).
 
-### Opção 1: Usando Python (Recomendado)
+### Opcao 1: Usando Python (Recomendado)
 
 ```bash
-# Navegue até a pasta do projeto
-cd sudoku-validator
+# Navegue ate a pasta do projeto
+cd Sudoku_Threads
 
 # Python 3
 python -m http.server 8000
 
-# Ou Python 2
-python -m SimpleHTTPServer 8000
-
 # Acesse no navegador
 http://localhost:8000
 ```
 
-### Opção 2: Usando Node.js
+### Opcao 2: Usando Node.js
 
 ```bash
-# Instale o http-server globalmente
 npm install -g http-server
-
-# Execute na pasta do projeto
 http-server -p 8000
-
-# Acesse no navegador
-http://localhost:8000
+# Acesse em http://localhost:8000
 ```
 
-### Opção 3: Usando VS Code
+### Opcao 3: Usando VS Code
 
-1. Instale a extensão "Live Server"
-2. Clique com botão direito em `index.html`
-3. Selecione "Open with Live Server"
+1. Instale a extensao "Live Server".
+2. Clique com o botao direito em `index.html`.
+3. Selecione "Open with Live Server".
 
-### ⚠️ Importante
+### Importante
 
-**Web Workers não funcionam com o protocolo `file://`**. É obrigatório usar um servidor web local.
+**Web Workers nao funcionam com o protocolo `file://`.** E obrigatorio servir os arquivos via HTTP local.
 
 ---
 
-## 📖 Como Usar
+## Como Usar
 
-### 1. Carregar Exemplos
+### 1. Carregar um desafio
 
-- **Exemplo Válido:** Clique em "📋 Carregar Exemplo Válido"
-- **Exemplo Inválido:** Clique em "❌ Carregar Exemplo Inválido"
+- Clique em **"Novo Desafio"** para gerar um tabuleiro aleatorio (clues sao bloqueados).
+- Use **"Reiniciar"** para restaurar o desafio atual.
+- Use **"Limpar livres"** para apagar apenas as celulas editaveis.
 
-### 2. Preencher Manualmente
+### 2. Preencher manualmente
 
-- Clique nas células do grid
-- Digite números de 1 a 9
-- Preencha todo o grid (81 células)
+- Clique nas celulas livres e digite numeros de 1 a 9.
+- A interface bloqueia caracteres invalidos e limita a um digito por celula.
 
-### 3. Validar
+### 3. Validar com threads
 
-1. Clique no botão "⚡ Validar com Threads"
-2. Observe o painel de monitoramento em tempo real
-3. Acompanhe o log de execução
-4. Veja o resultado final
+1. Clique em **"Rodar Threads"**.
+2. 27 workers sao criados (9 linhas, 9 colunas, 9 sub-grades).
+3. O painel lateral mostra o status de cada thread e o tempo gasto.
+4. Celulas com conflito sao destacadas e recebem tooltip com o motivo.
 
-### 4. Monitoramento
+### 4. Validacao em tempo real
 
-Durante a validação, você pode observar:
-
-- **Threads Ativas:** Quantas threads estão executando
-- **Threads Finalizadas:** Quantas já concluíram
-- **Tempo Total:** Duração da validação completa
-- **Status Individual:** Status de cada uma das 27 threads
-- **Log Detalhado:** Registro completo de toda a execução
+- Ao alterar uma celula, 3 workers (linha, coluna e sub-grade) rodam imediatamente com `ignoreEmpty=true`.
+- Apenas conflitos de duplicacao sao destacados enquanto o tabuleiro nao esta completo.
 
 ---
 
-## 🔧 Implementação Técnica
+## Implementacao Tecnica
 
-### 1. Estrutura de Dados
+### 1. Geracao e mascara do tabuleiro
 
 ```javascript
-// Grid do Sudoku (matriz 9×9)
-const grid = [
-  [6, 2, 4, 5, 3, 9, 1, 8, 7],
-  [5, 1, 9, 7, 2, 8, 6, 3, 4],
-  // ... 7 linhas restantes
-];
-
-// Parâmetros enviados para cada thread
-{
-  type: 'VALIDATE_COLUMN',
-  data: { columnIndex: 0 },
-  threadId: 0,
-  grid: grid
+function generateRandomPuzzle() {
+  const solution = buildSolvedBoard();
+  const clues = maskBoard(solution, 0.62); // ~38% das celulas permanecem
+  const stamp = Math.floor(Math.random() * 10000);
+  return { name: `Aleatorio #${stamp}`, clues };
 }
 ```
 
-### 2. Comunicação Thread Principal ↔ Worker
+### 2. Payload das threads
 
 ```javascript
-// Thread Principal → Worker
-worker.postMessage({
-  type: 'VALIDATE_COLUMN',
-  data: { columnIndex: 0 },
-  threadId: 0,
-  grid: grid
-});
-
-// Worker → Thread Principal
-self.postMessage({
-  status: 'COMPLETED',
-  result: {
-    threadId: 0,
-    valid: true,
-    region: 'Coluna 1',
-    message: 'Válida',
-    executionTime: '12.45ms'
-  }
-});
+// Cada payload identifica o tipo e as celulas daquela unidade
+{ kind: "row", index: 0, cells: [{ row: 0, col: 0, value: 6 }, ...] }
+{ kind: "column", index: 3, cells: [...] }
+{ kind: "box", index: 8, cells: [...] }
 ```
 
-### 3. Algoritmo de Validação
-
-#### Validação de Coluna
+### 3. Execucao paralela
 
 ```javascript
-function validateColumn(grid, columnIndex) {
-  const seen = new Set();
-  
-  for (let row = 0; row < 9; row++) {
-    const value = grid[row][columnIndex];
-    
-    // Verificações:
-    // 1. Valor entre 1 e 9
-    // 2. Sem duplicatas
-    
-    if (seen.has(value)) {
-      return { valid: false };
-    }
-    seen.add(value);
-  }
-  
-  return { valid: true };
+async function validateBoard() {
+  const matrix = collectMatrixFromBoard();
+  const payloads = buildPayloads(matrix); // 27 payloads
+  const results = await Promise.all(payloads.map(runValidationWorker));
+  // Consolida conflitos e atualiza UI
 }
 ```
 
-#### Validação de Linha
+### 4. Worker isolado
 
 ```javascript
-function validateRow(grid, rowIndex) {
-  const seen = new Set();
-  
-  for (let col = 0; col < 9; col++) {
-    const value = grid[rowIndex][col];
-    
-    if (seen.has(value)) {
-      return { valid: false };
-    }
-    seen.add(value);
-  }
-  
-  return { valid: true };
-}
-```
-
-#### Validação de Subgrid 3×3
-
-```javascript
-function validateSubgrid(grid, startRow, startCol) {
-  const seen = new Set();
-  
-  for (let row = startRow; row < startRow + 3; row++) {
-    for (let col = startCol; col < startCol + 3; col++) {
-      const value = grid[row][col];
-      
-      if (seen.has(value)) {
-        return { valid: false };
-      }
-      seen.add(value);
-    }
-  }
-  
-  return { valid: true };
-}
-```
-
-### 4. Gerenciamento de Promises
-
-```javascript
-async createAllWorkers() {
-  const promises = [];
-  
-  // Cria 27 promises (uma para cada worker)
-  for (let i = 0; i < 27; i++) {
-    promises.push(this.createWorker(config));
-  }
-  
-  // Aguarda todas concluírem
-  return Promise.all(promises);
-}
+self.onmessage = ({ data }) => {
+  const { kind, index, cells, ignoreEmpty = false } = data;
+  // Marca duplicados, vazios ou valores fora de 1..9
+  self.postMessage({ kind, index, valid, invalidPositions });
+};
 ```
 
 ---
 
-## 🎨 Decisões de Design
+## Decisoes de Design
 
-### Por que 27 Threads?
-
-A estratégia de usar **uma thread por região** oferece:
-
-1. **Granularidade Fina:** Cada validação é independente
-2. **Máximo Paralelismo:** Aproveitamento total de CPUs multi-core
-3. **Facilidade de Debug:** Fácil identificar qual região falhou
-4. **Visualização Clara:** Usuário vê cada thread trabalhando
+- **27 threads (linha/coluna/sub-grade):** maxima clareza didatica e paralelismo pleno.
+- **Validacao incremental:** ao digitar, usamos `ignoreEmpty` para alertar apenas duplicatas sem exigir tabuleiro completo.
+- **Geracao de desafios aleatorios:** evita depender de arquivos estaticos de exemplo.
+- **Destaques contextuais:** tooltips indicam se e duplicado, vazio ou valor fora do intervalo.
 
 ### Alternativas Consideradas
 
-#### Opção A: 3 Threads (implementação mínima)
-- 1 para colunas
-- 1 para linhas
-- 1 para subgrids
-
-❌ **Não escolhida:** Menos paralelismo, menos didático
-
-#### Opção B: 11 Threads (sugestão do roteiro)
-- 1 para todas as colunas
-- 1 para todas as linhas
-- 9 para os subgrids
-
-❌ **Não escolhida:** Distribuição desigual de trabalho
-
-#### Opção C: 27 Threads (ESCOLHIDA ✅)
-- 9 para colunas
-- 9 para linhas
-- 9 para subgrids
-
-✅ **Escolhida:** Máximo paralelismo e clareza didática
+- **3 threads (linha, coluna, sub-grades):** menos paralelismo e pouca visibilidade.
+- **11 threads (1 para linhas, 1 para colunas, 9 para sub-grades):** distribuicao desigual de trabalho.
+- **27 threads (adotado):** melhor visualizacao e balanceamento.
 
 ### Tratamento de Erros
 
-- ✅ Validação de entrada do usuário
-- ✅ Try-catch em operações críticas
-- ✅ Mensagens de erro descritivas
-- ✅ Graceful degradation
-- ✅ Log detalhado para debugging
+- Sanitizacao de entrada (apenas digitos 1-9).
+- `try...catch` em chamadas assincronas.
+- Mensagens de status claras na UI em caso de falha.
 
 ### Performance
 
-- ✅ Execução paralela real
-- ✅ Uso eficiente de memória
-- ✅ Terminação adequada de workers
-- ✅ Promises para gerenciar assincronismo
+- Workers liberados imediatamente apos responder (`terminate`).
+- Validacao completa tipica em poucos milissegundos em maquinas modernas.
 
 ---
 
-## 🚀 Possíveis Melhorias
+## Possiveis Melhorias
 
 ### Funcionalidades Adicionais
 
-1. **Salvar/Carregar Sudoku**
-   - LocalStorage para persistência
-   - Importar/exportar em diferentes formatos
+1. **Salvar/Carregar Sudoku:** persistir progresso no `localStorage`.
+2. **Gerador com dificuldades:** diferentes niveis ao mascarar o tabuleiro.
+3. **Solver automatico:** resolver e mostrar passos.
+4. **Dicas inteligentes:** sugerir proximo movimento.
 
-2. **Modo de Competição**
-   - Cronômetro
-   - Ranking de tempo
-   - Desafios diários
+### Melhorias Tecnicas
 
-3. **Gerador de Sudoku**
-   - Gerar puzzles válidos
-   - Diferentes níveis de dificuldade
+1. **TypeScript:** tipos mais seguros para payloads das threads.
+2. **Testes automatizados:** testes unitarios para `validatorWorker` e geracao de puzzles.
+3. **Thread pool:** reusar workers para reduzir overhead de criacao.
+4. **PWA:** suporte offline e instalacao.
 
-4. **Solver Automático**
-   - Resolver Sudoku automaticamente
-   - Exibir passo a passo
+### Otimizacoes
 
-5. **Dicas Inteligentes**
-   - Sugerir próximos números
-   - Highlight de erros em tempo real
-
-### Melhorias Técnicas
-
-1. **TypeScript**
-   - Type safety
-   - Melhor autocomplete
-   - Menos bugs
-
-2. **Framework Frontend**
-   - React/Vue para reatividade
-   - Componentização melhor
-
-3. **Testes Automatizados**
-   - Unit tests
-   - Integration tests
-   - E2E tests
-
-4. **Build Process**
-   - Webpack/Vite
-   - Minificação
-   - Tree shaking
-
-5. **PWA**
-   - Service Workers
-   - Funcionar offline
-   - Instalável
-
-### Otimizações
-
-1. **Thread Pool**
-   - Reusar workers
-   - Reduzir overhead de criação
-
-2. **Web Assembly**
-   - Validação ainda mais rápida
-   - Ideal para cálculos intensivos
-
-3. **SharedArrayBuffer**
-   - Compartilhar memória entre threads
-   - Evitar clonagem de dados
+1. **SharedArrayBuffer:** evitar copia de dados grandes entre threads.
+2. **WebAssembly:** validar unidades mais rapidamente em dispositivos menos potentes.
 
 ---
 
-## 📊 Métricas do Projeto
+## Metricas do Projeto
 
 ### Complexidade
 
-- **Linhas de Código:** ~1.500 linhas
-- **Arquivos:** 4 arquivos
-- **Funções:** 30+ funções
-- **Classes:** 1 classe principal
+- **Linhas de codigo:** ~500 (HTML + CSS + JS + Worker).
+- **Arquivos:** 4 arquivos principais.
+- **Workers:** 27 por validacao completa; 3 por celula editada.
 
-### Performance Típica
+### Performance tipica
 
-- **Tempo de Validação:** 50-200ms
-- **Threads:** 27 em paralelo
-- **Memória:** ~5-10MB
+- **Tempo de validacao:** dezenas de milissegundos para tabuleiros completos.
+- **Memoria:** baixa, apenas matrizes 9x9 e payloads leves.
 
 ---
 
-## 👥 Conceitos de Sistemas Operacionais Aplicados
+## Conceitos de Sistemas Operacionais Aplicados
 
 ### 1. Multithreading
-- Execução paralela de processos
-- Sincronização de threads
-- Comunicação entre processos
+- Execucao paralela com Web Workers.
+- Isolamento de contexto por thread.
 
-### 2. Concorrência
-- Múltiplas tarefas executando simultaneamente
-- Race conditions (prevenidas pelo isolamento)
+### 2. Concorrencia
+- Multiplas unidades validadas simultaneamente.
+- Prevencao de race conditions via isolamento das estruturas.
 
 ### 3. Paralelismo
-- Execução simultânea real em CPUs multi-core
-- Divisão de trabalho
+- Trabalho dividido entre 27 unidades independentes.
 
-### 4. Comunicação Inter-Processos (IPC)
-- Message passing entre threads
-- Assíncrono e não-bloqueante
+### 4. Comunicacao Inter-Processos (IPC)
+- `postMessage` para troca de mensagens entre UI e workers.
 
-### 5. Sincronização
-- Promises para coordenar threads
-- Coleta de resultados
+### 5. Sincronizacao
+- `Promise.all` para aguardar todas as threads e consolidar o resultado.
 
 ---
 
-## 📝 Conclusão
+## Conclusao
 
-Este projeto demonstra com sucesso a aplicação prática de **conceitos de paralelismo** através de um validador de Sudoku com **27 threads executando simultaneamente**.
-
-A implementação utiliza **Web Workers** do JavaScript para criar threads reais no navegador, permitindo uma execução verdadeiramente paralela que aproveita múltiplos núcleos do processador.
+O projeto demonstra, de forma pratica, **paralelismo com 27 threads independentes** validando um Sudoku. Web Workers garantem execucao paralela verdadeira no navegador, enquanto a UI destaca conflitos e mostra o tempo gasto por cada unidade.
 
 ### Aprendizados Principais
 
-1. ✅ Como criar e gerenciar múltiplas threads
-2. ✅ Comunicação assíncrona entre threads
-3. ✅ Vantagens do processamento paralelo
-4. ✅ Sincronização e coleta de resultados
-5. ✅ Boas práticas de código limpo e organizado
+1. Criacao, disparo e termino de multiplas threads.
+2. Comunicacao assincrona entre threads e thread principal.
+3. Beneficios do processamento paralelo em um problema classico.
+4. Sincronizacao e agregacao de resultados com Promises.
+5. Boas praticas de UX para feedback imediato.
 
 ---
 
-## 📚 Referências
+## Referencias
 
 - SILBERSCHATZ, A.; GALVIN, B. P.; GAGNE, G. **Fundamentos de sistemas operacionais**. 8. ed. Rio de Janeiro: Elsevier/Campus, 2013.
-- MDN Web Docs: **Web Workers API**
-- JavaScript.info: **Web Workers**
+- MDN Web Docs: **Web Workers API**.
+- JavaScript.info: **Web Workers**.
 
 ---
 
-## 📧 Contato
+## Contato
 
-Projeto desenvolvido para fins acadêmicos.
+Projeto desenvolvido para fins academicos.
 
-**Pontifícia Universidade Católica de Goiás**  
-Escola Politécnica e de Artes  
+**Pontificia Universidade Catolica de Goias**  
+Escola Politecnica e de Artes  
 CMP2351 - Sistemas Operacionais I
 
 ---
 
-**© 2025 - Projeto Acadêmico**
+**(c) 2025 - Projeto Academico**

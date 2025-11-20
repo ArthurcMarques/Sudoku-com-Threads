@@ -1,154 +1,86 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Sudoku - Multithreading</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudoku Threads</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎯 Validador de Solução de Sudoku</h1>
-            <p class="subtitle">Utilizando 27 Threads em Paralelo</p>
-            <div class="university-info">
-                <p><strong>Pontifícia Universidade Católica de Goiás</strong></p>
-                <p>Escola Politécnica e de Artes</p>
-                <p>CMP2351 - Sistemas Operacionais I</p>
-            </div>
-        </header>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="hero-kicker">Sistemas Operacionais • Threads Web</p>
+        <h1>Sudoku com Threads Independentes</h1>
+        <p class="hero-lede">
+          Cada linha, coluna e sub-grade dispara sua própria thread (Web Worker) para validar o tabuleiro.
+          Acompanhe o painel lateral para ver o status de cada thread em tempo real.
+        </p>
+      </div>
+      <div class="hero-badge">
+        <span>27</span>
+        <small>Threads em paralelo</small>
+      </div>
+    </header>
 
-        <main>
-            <!-- Grid do Sudoku -->
-            <section class="sudoku-section">
-                <h2>Grid do Sudoku (9×9)</h2>
-                <div class="sudoku-grid" id="sudokuGrid">
-                    <!-- Grid será gerado dinamicamente -->
-                </div>
-                
-                <div class="button-group">
-                    <button id="btnLoadExample" class="btn btn-secondary">
-                        📋 Carregar Exemplo Válido
-                    </button>
-                    <button id="btnLoadInvalid" class="btn btn-secondary">
-                        ❌ Carregar Exemplo Inválido
-                    </button>
-                    <button id="btnClear" class="btn btn-secondary">
-                        🗑️ Limpar Grid
-                    </button>
-                </div>
-                
-                <div class="auto-validation-info">
-                    <p>
-                        ✨ <strong>Validação Automática Ativada!</strong><br>
-                        <small>A validação com 27 threads será executada automaticamente quando todas as células estiverem preenchidas.</small>
-                    </p>
-                </div>
-                
-                <!-- Seção de Gerador de Sudoku -->
-                <div class="generator-section">
-                    <h3>🎮 Gerar Sudoku para Resolver</h3>
-                    <p class="generator-description">
-                        Gere um Sudoku parcialmente preenchido e tente completá-lo!
-                        Depois, valide sua solução com as 27 threads.
-                    </p>
-                    <div class="difficulty-selector">
-                        <label>Escolha a dificuldade:</label>
-                        <div class="difficulty-buttons">
-                            <button class="btn-difficulty active" data-difficulty="easy">
-                                😊 Fácil<br>
-                                <small>(40 células vazias)</small>
-                            </button>
-                            <button class="btn-difficulty" data-difficulty="medium">
-                                🤔 Médio<br>
-                                <small>(50 células vazias)</small>
-                            </button>
-                            <button class="btn-difficulty" data-difficulty="hard">
-                                😰 Difícil<br>
-                                <small>(60 células vazias)</small>
-                            </button>
-                            <button class="btn-difficulty" data-difficulty="expert">
-                                🔥 Expert<br>
-                                <small>(65 células vazias)</small>
-                            </button>
-                        </div>
-                    </div>
-                    <button id="btnGenerate" class="btn btn-success">
-                        🎲 Gerar Novo Sudoku
-                    </button>
-                    <button id="btnShowSolution" class="btn btn-hint" style="display: none;">
-                        💡 Mostrar Solução
-                    </button>
-                    <button id="btnCheckProgress" class="btn btn-hint" style="display: none;">
-                        📊 Verificar Progresso
-                    </button>
-                </div>
-            </section>
+    <main class="layout">
+      <section class="board-panel">
+        <div class="toolbar">
+          <button id="btn-new" class="primary">Novo Desafio</button>
+          <button id="btn-reset">Reiniciar</button>
+          <button id="btn-clear">Limpar livres</button>
+          <button id="btn-check" class="accent">Rodar Threads</button>
+        </div>
+        <div id="status-banner" class="status-banner">Carregando o tabuleiro...</div>
+        <div id="sudoku-board" class="board" aria-label="Tabuleiro de Sudoku"></div>
+        <div class="legend">
+          <p><span class="dot dot-valid"></span> Unidade válida</p>
+          <p><span class="dot dot-invalid"></span> Unidade com erro (valor repetido, fora do intervalo ou vazio)</p>
+        </div>
+      </section>
 
-            <!-- Painel de Monitoramento -->
-            <section class="monitoring-section">
-                <h2>📊 Monitoramento de Threads</h2>
-                
-                <!-- Estatísticas Gerais -->
-                <div class="stats-panel">
-                    <div class="stat-card">
-                        <div class="stat-label">Threads Ativas</div>
-                        <div class="stat-value" id="activeThreads">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Threads Finalizadas</div>
-                        <div class="stat-value" id="completedThreads">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Tempo Total</div>
-                        <div class="stat-value" id="totalTime">0ms</div>
-                    </div>
-                </div>
+      <section class="threads-panel">
+        <h2>Monitor de Threads</h2>
+        <p class="threads-help">
+          São 9 threads para linhas, 9 para colunas e 9 para sub-grids. Cada uma trabalha isoladamente e
+          reporta o resultado aqui.
+        </p>
+        <ul id="thread-log" class="thread-log" aria-live="polite"></ul>
+      </section>
+    </main>
 
-                <!-- Status das Threads -->
-                <div class="thread-status">
-                    <div class="thread-category">
-                        <h3>🔵 Validação de Colunas (9 Threads)</h3>
-                        <div class="thread-list" id="columnThreads"></div>
-                    </div>
-                    
-                    <div class="thread-category">
-                        <h3>🟢 Validação de Linhas (9 Threads)</h3>
-                        <div class="thread-list" id="rowThreads"></div>
-                    </div>
-                    
-                    <div class="thread-category">
-                        <h3>🟡 Validação de Subgrids 3×3 (9 Threads)</h3>
-                        <div class="thread-list" id="subgridThreads"></div>
-                    </div>
-                </div>
-            </section>
+    <section class="insight">
+      <h2>Como funciona</h2>
+      <div class="insight-grid">
+        <article>
+          <h3>Interface viva</h3>
+          <p>
+            Digite diretamente nas células vazias. Valores originais do desafio ficam bloqueados e citados
+            com fundo translúcido.
+          </p>
+        </article>
+        <article>
+          <h3>Validação distribuída</h3>
+          <p>
+            Ao clicar em <strong>Rodar Threads</strong>, disparamos 27 Web Workers. Cada worker recebe apenas
+            a fatia relevante do tabuleiro e devolve se encontrou algum conflito.
+          </p>
+        </article>
+        <article>
+          <h3>Feedback direcionado</h3>
+          <p>
+            Células problematicas são destacadas indicando que a thread correspondente encontrou valores
+            repetidos, inválidos ou ausentes.
+          </p>
+        </article>
+      </div>
+    </section>
 
-            <!-- Resultado Final -->
-            <section class="result-section" id="resultSection" style="display: none;">
-                <div class="result-card" id="resultCard">
-                    <div class="result-icon" id="resultIcon"></div>
-                    <h2 id="resultTitle"></h2>
-                    <p id="resultMessage"></p>
-                    <div class="result-details" id="resultDetails"></div>
-                </div>
-            </section>
+    <footer class="footer">
+      Construído em HTML, CSS e JavaScript puro — sem dependências externas.
+    </footer>
+  </div>
 
-            <!-- Log de Execução -->
-            <section class="log-section">
-                <h2>📝 Log de Execução</h2>
-                <div class="log-container" id="logContainer">
-                    <p class="log-empty">Aguardando validação...</p>
-                </div>
-                <button id="btnClearLog" class="btn btn-small">Limpar Log</button>
-            </section>
-        </main>
-
-        <footer>
-            <p>© 2025 - Projeto Acadêmico | Desenvolvido com Web Workers (Threads JavaScript)</p>
-        </footer>
-    </div>
-
-    <script src="js/main.js"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
