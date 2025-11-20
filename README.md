@@ -26,6 +26,11 @@
 8. [Implementacao Tecnica](#implementacao-tecnica)
 9. [Decisoes de Design](#decisoes-de-design)
 10. [Possiveis Melhorias](#possiveis-melhorias)
+11. [Metricas do Projeto](#metricas-do-projeto)
+12. [Conceitos de Sistemas Operacionais Aplicados](#conceitos-de-sistemas-operacionais-aplicados)
+13. [Conclusao](#conclusao)
+14. [Referencias](#referencias)
+15. [Contato](#contato)
 
 ---
 
