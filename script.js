@@ -1,355 +1,431 @@
-function shuffle(array) {
-  const clone = [...array];
-  for (let i = clone.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [clone[i], clone[j]] = [clone[j], clone[i]];
+function embaralhar(array) {
+  const copia = [...array];
+  for (let i = copia.length - 1; i > 0; i -= 1) {
+    const indice = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[indice]] = [copia[indice], copia[i]];
   }
-  return clone;
+  return copia;
 }
 
-function buildSolvedBoard() {
+function construirTabuleiroResolvido() {
   const base = [0, 1, 2];
-  const rows = shuffle(base).flatMap((group) => shuffle(base).map((r) => group * 3 + r));
-  const cols = shuffle(base).flatMap((group) => shuffle(base).map((c) => group * 3 + c));
-  const board = Array.from({ length: 9 }, () => Array(9).fill(0));
+  const linhas = embaralhar(base).flatMap((grupo) => embaralhar(base).map((linha) => grupo * 3 + linha));
+  const colunas = embaralhar(base).flatMap((grupo) => embaralhar(base).map((coluna) => grupo * 3 + coluna));
+  const tabuleiro = Array.from({ length: 9 }, () => Array(9).fill(0));
 
-  const pattern = (row, col) => (row * 3 + Math.floor(row / 3) + col) % 9;
+  const padrao = (linha, coluna) => (linha * 3 + Math.floor(linha / 3) + coluna) % 9;
 
-  rows.forEach((r, rowIndex) => {
-    cols.forEach((c, colIndex) => {
-      board[rowIndex][colIndex] = pattern(r, c) + 1;
+  linhas.forEach((linhaValor, indiceLinha) => {
+    colunas.forEach((colunaValor, indiceColuna) => {
+      tabuleiro[indiceLinha][indiceColuna] = padrao(linhaValor, colunaValor) + 1;
     });
   });
 
-  return board;
+  return tabuleiro;
 }
 
-function maskBoard(solution, hideRatio = 0.6) {
-  const masked = solution.map((row) => [...row]);
-  masked.forEach((row, r) => {
-    row.forEach((_, c) => {
-      if (Math.random() < hideRatio) {
-        masked[r][c] = 0;
+function mascararTabuleiro(solucao, proporcaoOculta = 0.6) {
+  const mascarado = solucao.map((linha) => [...linha]);
+  mascarado.forEach((linha, indiceLinha) => {
+    linha.forEach((_, indiceColuna) => {
+      if (Math.random() < proporcaoOculta) {
+        mascarado[indiceLinha][indiceColuna] = 0;
       }
     });
   });
-  return masked;
+  return mascarado;
 }
 
-function generateRandomPuzzle() {
-  const solution = buildSolvedBoard();
-  const clues = maskBoard(solution, 0.62);
-  const stamp = Math.floor(Math.random() * 10000);
-  return { name: `Aleatorio #${stamp}`, clues };
+function gerarDesafioAleatorio() {
+  const solucao = construirTabuleiroResolvido();
+  const pistas = mascararTabuleiro(solucao, 0.62);
+  const carimbo = Math.floor(Math.random() * 10000);
+  return { nome: `Aleatorio #${carimbo}`, pistas, solucao };
 }
 
-const KIND_LABELS = {
-  row: "Linha",
-  column: "Coluna",
-  box: "Sub-grade",
+const ROTULOS_TIPOS = {
+  linha: "Linha",
+  coluna: "Coluna",
+  bloco: "Sub-grade",
 };
 
-const boardElement = document.getElementById("sudoku-board");
-const statusBanner = document.getElementById("status-banner");
-const threadLog = document.getElementById("thread-log");
+const elementoTabuleiro = document.getElementById("sudoku-board");
+const faixaStatus = document.getElementById("status-banner");
+const logThreads = document.getElementById("thread-log");
 
-const state = {
-  template: null,
-  lockedCells: new Set(),
-  puzzleName: "",
+const estado = {
+  modelo: null,
+  solucao: null,
+  celulasBloqueadas: new Set(),
+  nomeDesafio: "",
 };
 
-init();
+iniciar();
 
-function init() {
-  loadRandomPuzzle();
-  document.getElementById("btn-new").addEventListener("click", loadRandomPuzzle);
-  document.getElementById("btn-reset").addEventListener("click", resetBoard);
-  document.getElementById("btn-clear").addEventListener("click", clearEditableCells);
-  document.getElementById("btn-check").addEventListener("click", validateBoard);
+function iniciar() {
+  carregarDesafioAleatorio();
+  document.getElementById("btn-new").addEventListener("click", carregarDesafioAleatorio);
+  document.getElementById("btn-reset").addEventListener("click", reiniciarTabuleiro);
+  document.getElementById("btn-clear").addEventListener("click", limparCelulasEditaveis);
+  document.getElementById("btn-check").addEventListener("click", validarTabuleiro);
+  document.getElementById("btn-fill-correct").addEventListener("click", completarCorreto);
+  document.getElementById("btn-fill-wrong").addEventListener("click", completarIncorreto);
 }
 
-function loadRandomPuzzle() {
-  const picked = generateRandomPuzzle();
-  state.template = cloneMatrix(picked.clues);
-  state.lockedCells = buildLockedSet(picked.clues);
-  state.puzzleName = picked.name;
-  renderBoard(state.template);
-  setStatus(`Desafio aleatorio (${picked.name}) pronto. Boa sorte!`);
-  threadLog.innerHTML = "";
+function carregarDesafioAleatorio() {
+  const desafio = gerarDesafioAleatorio();
+  estado.modelo = clonarMatriz(desafio.pistas);
+  estado.solucao = desafio.solucao;
+  estado.celulasBloqueadas = construirConjuntoBloqueado(desafio.pistas);
+  estado.nomeDesafio = desafio.nome;
+  renderizarTabuleiro(estado.modelo);
+  definirStatus(`Desafio aleatorio (${desafio.nome}) pronto. Boa sorte!`);
+  logThreads.innerHTML = "";
 }
 
-function renderBoard(matrix) {
-  boardElement.innerHTML = "";
-  matrix.forEach((row, rowIndex) => {
-    row.forEach((value, colIndex) => {
+function renderizarTabuleiro(matriz) {
+  elementoTabuleiro.innerHTML = "";
+  matriz.forEach((linha, indiceLinha) => {
+    linha.forEach((valor, indiceColuna) => {
       const input = document.createElement("input");
       input.type = "text";
       input.classList.add("cell");
-      input.dataset.row = String(rowIndex);
-      input.dataset.col = String(colIndex);
+      input.dataset.row = String(indiceLinha);
+      input.dataset.col = String(indiceColuna);
       input.autocomplete = "off";
       input.inputMode = "numeric";
       input.pattern = "[1-9]";
-      if ((colIndex + 1) % 3 === 0 && colIndex !== 8) {
+      if ((indiceColuna + 1) % 3 === 0 && indiceColuna !== 8) {
         input.classList.add("block-right");
       }
-      if ((rowIndex + 1) % 3 === 0 && rowIndex !== 8) {
+      if ((indiceLinha + 1) % 3 === 0 && indiceLinha !== 8) {
         input.classList.add("block-bottom");
       }
-      const key = `${rowIndex}-${colIndex}`;
-      if (state.lockedCells.has(key) && value !== 0) {
-        input.value = value;
+      const chave = `${indiceLinha}-${indiceColuna}`;
+      if (estado.celulasBloqueadas.has(chave) && valor !== 0) {
+        input.value = valor;
         input.disabled = true;
         input.classList.add("prefilled");
       }
       input.addEventListener("input", () => {
-        enforceNumericSymbol(input);
-        handleCellChange(rowIndex, colIndex);
+        imporSimboloNumerico(input);
+        tratarAlteracaoCelula(indiceLinha, indiceColuna);
       });
-      boardElement.appendChild(input);
+      elementoTabuleiro.appendChild(input);
     });
   });
-  clearHighlights();
+  limparDestaques();
 }
 
-function enforceNumericSymbol(input) {
-  let clean = input.value.replace(/[^\d]/g, "");
-  if (clean.length > 1) {
-    clean = clean.charAt(0);
+function imporSimboloNumerico(input) {
+  let valorLimpo = input.value.replace(/[^\d]/g, "");
+  if (valorLimpo.length > 1) {
+    valorLimpo = valorLimpo.charAt(0);
   }
-  if (clean && (clean === "0" || Number(clean) > 9)) {
-    clean = "";
+  if (valorLimpo && (valorLimpo === "0" || Number(valorLimpo) > 9)) {
+    valorLimpo = "";
   }
-  input.value = clean;
+  input.value = valorLimpo;
 }
 
-function resetBoard() {
-  if (!state.template) return;
+function reiniciarTabuleiro() {
+  if (!estado.modelo) return;
   document.querySelectorAll(".cell").forEach((input) => {
-    const row = Number(input.dataset.row);
-    const col = Number(input.dataset.col);
-    if (state.lockedCells.has(`${row}-${col}`)) {
-      input.value = state.template[row][col] || "";
+    const linha = Number(input.dataset.row);
+    const coluna = Number(input.dataset.col);
+    if (estado.celulasBloqueadas.has(`${linha}-${coluna}`)) {
+      input.value = estado.modelo[linha][coluna] || "";
     } else {
       input.value = "";
     }
   });
-  clearHighlights();
-  threadLog.innerHTML = "";
-  setStatus("Tabuleiro reiniciado para o desafio atual.");
+  limparDestaques();
+  logThreads.innerHTML = "";
+  definirStatus("Tabuleiro reiniciado para o desafio atual.");
 }
 
-function clearEditableCells() {
+function limparCelulasEditaveis() {
   document.querySelectorAll(".cell").forEach((input) => {
-    const row = Number(input.dataset.row);
-    const col = Number(input.dataset.col);
-    if (!state.lockedCells.has(`${row}-${col}`)) {
+    const linha = Number(input.dataset.row);
+    const coluna = Number(input.dataset.col);
+    if (!estado.celulasBloqueadas.has(`${linha}-${coluna}`)) {
       input.value = "";
     }
   });
-  clearHighlights();
-  setStatus("Células livres limpas. Complete antes de rodar as threads.");
+  limparDestaques();
+  definirStatus("Celulas livres limpas. Complete antes de rodar as threads.");
 }
 
-function setStatus(message, variant = null) {
-  statusBanner.classList.remove("success", "error");
-  if (variant) {
-    statusBanner.classList.add(variant);
-  }
-  statusBanner.textContent = message;
-}
-
-function collectMatrixFromBoard() {
-  const matrix = Array.from({ length: 9 }, () => Array(9).fill(0));
+function preencherTabuleiroComMatriz(matriz) {
   document.querySelectorAll(".cell").forEach((input) => {
-    const row = Number(input.dataset.row);
-    const col = Number(input.dataset.col);
-    const value = Number(input.value);
-    matrix[row][col] = Number.isInteger(value) ? value : 0;
+    const linha = Number(input.dataset.row);
+    const coluna = Number(input.dataset.col);
+    const valor = matriz[linha][coluna];
+    input.value = valor ? String(valor) : "";
   });
-  return matrix;
 }
 
-function buildPayloads(matrix) {
-  const payloads = [];
-
-  for (let row = 0; row < 9; row += 1) {
-    const cells = matrix[row].map((value, col) => ({ row, col, value }));
-    payloads.push({ kind: "row", index: row, cells });
+function completarCorreto() {
+  if (!estado.solucao) {
+    definirStatus("Nenhum desafio carregado para completar.", "error");
+    return;
   }
+  preencherTabuleiroComMatriz(estado.solucao);
+  limparDestaques();
+  logThreads.innerHTML = "";
+  definirStatus("Tabuleiro preenchido com a solucao correta. Rode as threads para conferir.", "success");
+}
 
-  for (let col = 0; col < 9; col += 1) {
-    const cells = matrix.map((row, rowIndex) => ({ row: rowIndex, col, value: row[col] }));
-    payloads.push({ kind: "column", index: col, cells });
-  }
+function construirMatrizIncorreta(solucao) {
+  const matriz = clonarMatriz(solucao);
+  let linhaEscolhida = -1;
+  let colunasEditaveis = [];
 
-  for (let box = 0; box < 9; box += 1) {
-    const cells = [];
-    const startRow = Math.floor(box / 3) * 3;
-    const startCol = (box % 3) * 3;
-    for (let r = startRow; r < startRow + 3; r += 1) {
-      for (let c = startCol; c < startCol + 3; c += 1) {
-        cells.push({ row: r, col: c, value: matrix[r][c] });
+  for (let linha = 0; linha < 9; linha += 1) {
+    const livres = [];
+    for (let coluna = 0; coluna < 9; coluna += 1) {
+      if (!estado.celulasBloqueadas.has(`${linha}-${coluna}`)) {
+        livres.push(coluna);
       }
     }
-    payloads.push({ kind: "box", index: box, cells });
-  }
-
-  return payloads;
-}
-
-function buildPayloadsForCell(matrix, row, col) {
-  const payloads = [];
-
-  const rowCells = matrix[row].map((value, colIndex) => ({ row, col: colIndex, value }));
-  payloads.push({ kind: "row", index: row, cells: rowCells });
-
-  const colCells = matrix.map((rowValues, rowIndex) => ({ row: rowIndex, col, value: rowValues[col] }));
-  payloads.push({ kind: "column", index: col, cells: colCells });
-
-  const startRow = Math.floor(row / 3) * 3;
-  const startCol = Math.floor(col / 3) * 3;
-  const boxCells = [];
-  for (let r = startRow; r < startRow + 3; r += 1) {
-    for (let c = startCol; c < startCol + 3; c += 1) {
-      boxCells.push({ row: r, col: c, value: matrix[r][c] });
+    if (livres.length >= 2) {
+      linhaEscolhida = linha;
+      colunasEditaveis = livres;
+      break;
     }
   }
-  const boxIndex = Math.floor(row / 3) * 3 + Math.floor(col / 3);
-  payloads.push({ kind: "box", index: boxIndex, cells: boxCells });
 
-  return payloads;
+  if (linhaEscolhida === -1) {
+    for (let linha = 0; linha < 9; linha += 1) {
+      for (let coluna = 0; coluna < 9; coluna += 1) {
+        if (!estado.celulasBloqueadas.has(`${linha}-${coluna}`)) {
+          matriz[linha][coluna] = 0;
+          return matriz;
+        }
+      }
+    }
+    return matriz;
+  }
+
+  const [colunaA, colunaB] = colunasEditaveis;
+  const valorDuplicado = matriz[linhaEscolhida][colunaA];
+  matriz[linhaEscolhida][colunaB] = valorDuplicado;
+  return matriz;
 }
 
-function runValidationWorker(payload) {
-  const startTime = performance.now();
+function completarIncorreto() {
+  if (!estado.solucao) {
+    definirStatus("Nenhum desafio carregado para completar.", "error");
+    return;
+  }
+  const matrizIncorreta = construirMatrizIncorreta(estado.solucao);
+  preencherTabuleiroComMatriz(matrizIncorreta);
+  limparDestaques();
+  logThreads.innerHTML = "";
+  definirStatus("Tabuleiro preenchido com uma solucao incorreta para demonstracao.", "error");
+}
+
+function definirStatus(mensagem, variante = null) {
+  faixaStatus.classList.remove("success", "error");
+  if (variante) {
+    faixaStatus.classList.add(variante);
+  }
+  faixaStatus.textContent = mensagem;
+}
+
+function coletarMatrizDoTabuleiro() {
+  const matriz = Array.from({ length: 9 }, () => Array(9).fill(0));
+  document.querySelectorAll(".cell").forEach((input) => {
+    const linha = Number(input.dataset.row);
+    const coluna = Number(input.dataset.col);
+    const valor = Number(input.value);
+    matriz[linha][coluna] = Number.isInteger(valor) ? valor : 0;
+  });
+  return matriz;
+}
+
+function construirCargas(matriz) {
+  const cargas = [];
+
+  for (let linha = 0; linha < 9; linha += 1) {
+    const celulas = matriz[linha].map((valor, coluna) => ({ linha, coluna, valor }));
+    cargas.push({ tipo: "linha", indice: linha, celulas });
+  }
+
+  for (let coluna = 0; coluna < 9; coluna += 1) {
+    const celulas = matriz.map((linhaValores, indiceLinha) => ({ linha: indiceLinha, coluna, valor: linhaValores[coluna] }));
+    cargas.push({ tipo: "coluna", indice: coluna, celulas });
+  }
+
+  for (let bloco = 0; bloco < 9; bloco += 1) {
+    const celulas = [];
+    const linhaInicial = Math.floor(bloco / 3) * 3;
+    const colunaInicial = (bloco % 3) * 3;
+    for (let linha = linhaInicial; linha < linhaInicial + 3; linha += 1) {
+      for (let coluna = colunaInicial; coluna < colunaInicial + 3; coluna += 1) {
+        celulas.push({ linha, coluna, valor: matriz[linha][coluna] });
+      }
+    }
+    cargas.push({ tipo: "bloco", indice: bloco, celulas });
+  }
+
+  return cargas;
+}
+
+function construirCargasParaCelula(matriz, linha, coluna) {
+  const cargas = [];
+
+  const celulasLinha = matriz[linha].map((valor, indiceColuna) => ({ linha, coluna: indiceColuna, valor }));
+  cargas.push({ tipo: "linha", indice: linha, celulas: celulasLinha });
+
+  const celulasColuna = matriz.map((valoresLinha, indiceLinha) => ({ linha: indiceLinha, coluna, valor: valoresLinha[coluna] }));
+  cargas.push({ tipo: "coluna", indice: coluna, celulas: celulasColuna });
+
+  const linhaInicial = Math.floor(linha / 3) * 3;
+  const colunaInicial = Math.floor(coluna / 3) * 3;
+  const celulasBloco = [];
+  for (let l = linhaInicial; l < linhaInicial + 3; l += 1) {
+    for (let c = colunaInicial; c < colunaInicial + 3; c += 1) {
+      celulasBloco.push({ linha: l, coluna: c, valor: matriz[l][c] });
+    }
+  }
+  const indiceBloco = Math.floor(linha / 3) * 3 + Math.floor(coluna / 3);
+  cargas.push({ tipo: "bloco", indice: indiceBloco, celulas: celulasBloco });
+
+  return cargas;
+}
+
+function executarWorkerValidacao(carga) {
+  const tempoInicio = performance.now();
   return new Promise((resolve, reject) => {
     const worker = new Worker("validatorWorker.js");
-    worker.onmessage = (event) => {
+    worker.onmessage = (evento) => {
       worker.terminate();
-      resolve({ ...event.data, duration: performance.now() - startTime });
+      resolve({ ...evento.data, duracao: performance.now() - tempoInicio });
     };
-    worker.onerror = (error) => {
+    worker.onerror = (erro) => {
       worker.terminate();
-      reject(error);
+      reject(erro);
     };
-    worker.postMessage(payload);
+    worker.postMessage(carga);
   });
 }
 
-async function validateBoard() {
-  clearHighlights();
-  threadLog.innerHTML = "";
-  setStatus("Executando 27 threads em paralelo...");
+async function validarTabuleiro() {
+  limparDestaques();
+  logThreads.innerHTML = "";
+  definirStatus("Executando 27 threads em paralelo...");
 
-  const matrix = collectMatrixFromBoard();
-  const payloads = buildPayloads(matrix);
+  const matriz = coletarMatrizDoTabuleiro();
+  const cargas = construirCargas(matriz);
 
   try {
-    const results = await Promise.all(payloads.map(runValidationWorker));
-    const problematicCells = [];
-    let allValid = true;
+    const resultados = await Promise.all(cargas.map(executarWorkerValidacao));
+    const celulasProblematicas = [];
+    let todasValidas = true;
 
-    results.forEach((result) => {
-      logThreadResult(result);
-      if (!result.valid) {
-        allValid = false;
-        problematicCells.push(...result.invalidPositions);
+    resultados.forEach((resultado) => {
+      registrarResultadoThread(resultado);
+      if (!resultado.valido) {
+        todasValidas = false;
+        celulasProblematicas.push(...resultado.posicoesInvalidas);
       }
     });
 
-    highlightInvalidCells(problematicCells);
+    destacarCelulasInvalidas(celulasProblematicas);
 
-    if (allValid) {
-      setStatus("Parabéns! Todas as threads confirmaram o tabuleiro.", "success");
+    if (todasValidas) {
+      definirStatus("Parabens! Todas as threads confirmaram o tabuleiro.", "success");
     } else {
-      setStatus("Algumas threads reportaram problemas. Passe o mouse sobre as células destacadas.", "error");
+      definirStatus("Algumas threads reportaram problemas. Passe o mouse sobre as celulas destacadas.", "error");
     }
-  } catch (error) {
-    console.error(error);
-    setStatus("Erro ao executar as threads de validação.", "error");
+  } catch (erro) {
+    console.error(erro);
+    definirStatus("Erro ao executar as threads de validacao.", "error");
   }
 }
 
-async function handleCellChange(row, col) {
-  const matrix = collectMatrixFromBoard();
-  const payloads = buildPayloadsForCell(matrix, row, col);
-  clearUnitHighlights(payloads);
+async function tratarAlteracaoCelula(linha, coluna) {
+  const matriz = coletarMatrizDoTabuleiro();
+  const cargas = construirCargasParaCelula(matriz, linha, coluna);
+  limparDestaquesUnidade(cargas);
+  logThreads.innerHTML = "";
 
   try {
-    const results = await Promise.all(payloads.map((payload) => runValidationWorker({ ...payload, ignoreEmpty: true })));
-    const problematicCells = [];
-    results.forEach((result) => {
-      if (!result.valid) {
-        problematicCells.push(
-          ...result.invalidPositions.filter((cell) => cell.issue === "duplicate")
+    const resultados = await Promise.all(cargas.map((carga) => executarWorkerValidacao({ ...carga, ignorarVazios: true })));
+    const celulasProblematicas = [];
+    resultados.forEach((resultado) => {
+      if (!resultado.valido) {
+        celulasProblematicas.push(
+          ...resultado.posicoesInvalidas.filter((celula) => celula.problema === "duplicada")
         );
       }
+      registrarResultadoThread(resultado, "live");
     });
 
-    highlightInvalidCells(problematicCells);
-    const descriptor = `(${row + 1}, ${col + 1})`;
-    if (problematicCells.length === 0) {
-      setStatus(`Threads da celula ${descriptor} concluidas sem conflitos.`);
+    destacarCelulasInvalidas(celulasProblematicas);
+    const descritor = `(${linha + 1}, ${coluna + 1})`;
+    if (celulasProblematicas.length === 0) {
+      definirStatus(`Threads da celula ${descritor} concluidas sem conflitos.`);
     } else {
-      setStatus(`Threads da celula ${descriptor} encontraram conflito(s).`, "error");
+      definirStatus(`Threads da celula ${descritor} encontraram conflito(s).`, "error");
     }
-  } catch (error) {
-    console.error(error);
-    setStatus("Erro ao validar threads da celula editada.", "error");
+  } catch (erro) {
+    console.error(erro);
+    definirStatus("Erro ao validar threads da celula editada.", "error");
   }
 }
 
-function logThreadResult(result) {
+function registrarResultadoThread(resultado, contexto = "full") {
   const item = document.createElement("li");
-  item.classList.add(result.valid ? "success" : "error");
-  const descriptor = `${KIND_LABELS[result.kind]} ${result.index + 1}`;
-  const statusText = result.valid
+  item.classList.add(resultado.valido ? "success" : "error");
+  const prefixo = contexto === "live" ? "[edicao] " : "";
+  const descritor = `${prefixo}${ROTULOS_TIPOS[resultado.tipo]} ${resultado.indice + 1}`;
+  const textoStatus = resultado.valido
     ? "OK"
-    : `${result.invalidPositions.length} conflito(s)`;
+    : `${resultado.posicoesInvalidas.length} conflito(s)`;
 
-  item.innerHTML = `<span>${descriptor}</span><strong>${statusText}</strong>`;
-  const timing = document.createElement("small");
-  timing.textContent = `${result.duration.toFixed(1)} ms`;
-  item.appendChild(timing);
+  item.innerHTML = `<span>${descritor}</span><strong>${textoStatus}</strong>`;
+  const tempo = document.createElement("small");
+  tempo.textContent = `${resultado.duracao.toFixed(1)} ms`;
+  item.appendChild(tempo);
 
-  threadLog.appendChild(item);
+  logThreads.appendChild(item);
 }
 
-function highlightInvalidCells(cells) {
-  const seen = new Set();
-  cells.forEach((cell) => {
-    const key = `${cell.row}-${cell.col}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    const input = getCellElement(cell.row, cell.col);
+function destacarCelulasInvalidas(celulas) {
+  const vistas = new Set();
+  celulas.forEach((celula) => {
+    const chave = `${celula.linha}-${celula.coluna}`;
+    if (vistas.has(chave)) return;
+    vistas.add(chave);
+    const input = obterElementoCelula(celula.linha, celula.coluna);
     if (!input) return;
     input.classList.add("invalid");
-    const label = cell.issue === "duplicate"
+    const rotulo = celula.problema === "duplicada"
       ? "valor repetido"
-      : cell.issue === "empty"
-        ? "em branco ou inválido"
+      : celula.problema === "vazia"
+        ? "em branco ou invalido"
         : "valor fora do intervalo";
-    input.title = `Problema: ${label}`;
+    input.title = `Problema: ${rotulo}`;
   });
 }
 
-function clearHighlights() {
+function limparDestaques() {
   document.querySelectorAll(".cell").forEach((input) => {
     input.classList.remove("invalid", "valid-unit");
     input.removeAttribute("title");
   });
 }
 
-function clearUnitHighlights(payloads) {
-  const seen = new Set();
-  payloads.forEach((payload) => {
-    payload.cells.forEach((cell) => {
-      const key = `${cell.row}-${cell.col}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      const input = getCellElement(cell.row, cell.col);
+function limparDestaquesUnidade(cargas) {
+  const vistas = new Set();
+  cargas.forEach((carga) => {
+    carga.celulas.forEach((celula) => {
+      const chave = `${celula.linha}-${celula.coluna}`;
+      if (vistas.has(chave)) return;
+      vistas.add(chave);
+      const input = obterElementoCelula(celula.linha, celula.coluna);
       if (!input) return;
       input.classList.remove("invalid", "valid-unit");
       input.removeAttribute("title");
@@ -357,22 +433,22 @@ function clearUnitHighlights(payloads) {
   });
 }
 
-function getCellElement(row, col) {
-  return boardElement.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+function obterElementoCelula(linha, coluna) {
+  return elementoTabuleiro.querySelector(`.cell[data-row="${linha}"][data-col="${coluna}"]`);
 }
 
-function cloneMatrix(matrix) {
-  return matrix.map((row) => [...row]);
+function clonarMatriz(matriz) {
+  return matriz.map((linha) => [...linha]);
 }
 
-function buildLockedSet(matrix) {
-  const locked = new Set();
-  matrix.forEach((row, rowIndex) => {
-    row.forEach((value, colIndex) => {
-      if (value !== 0) {
-        locked.add(`${rowIndex}-${colIndex}`);
+function construirConjuntoBloqueado(matriz) {
+  const bloqueadas = new Set();
+  matriz.forEach((linha, indiceLinha) => {
+    linha.forEach((valor, indiceColuna) => {
+      if (valor !== 0) {
+        bloqueadas.add(`${indiceLinha}-${indiceColuna}`);
       }
     });
   });
-  return locked;
+  return bloqueadas;
 }

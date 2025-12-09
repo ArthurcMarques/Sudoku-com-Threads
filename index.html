@@ -8,33 +8,20 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="hero">
-      <div>
-        <p class="hero-kicker">Sistemas Operacionais • Threads Web</p>
-        <h1>Sudoku com Threads Independentes</h1>
-        <p class="hero-lede">
-          Cada linha, coluna e sub-grade dispara sua própria thread (Web Worker) para validar o tabuleiro.
-          Acompanhe o painel lateral para ver o status de cada thread em tempo real.
-        </p>
-      </div>
-      <div class="hero-badge">
-        <span>27</span>
-        <small>Threads em paralelo</small>
-      </div>
-    </header>
-
     <main class="layout">
       <section class="board-panel">
         <div class="toolbar">
           <button id="btn-new" class="primary">Novo Desafio</button>
           <button id="btn-reset">Reiniciar</button>
           <button id="btn-clear">Limpar livres</button>
+          <button id="btn-fill-correct">Completar correto</button>
+          <button id="btn-fill-wrong" class="accent">Completar incorreto</button>
           <button id="btn-check" class="accent">Rodar Threads</button>
         </div>
         <div id="status-banner" class="status-banner">Carregando o tabuleiro...</div>
         <div id="sudoku-board" class="board" aria-label="Tabuleiro de Sudoku"></div>
         <div class="legend">
-          <p><span class="dot dot-valid"></span> Unidade válida</p>
+          <p><span class="dot dot-valid"></span> Unidade valida</p>
           <p><span class="dot dot-invalid"></span> Unidade com erro (valor repetido, fora do intervalo ou vazio)</p>
         </div>
       </section>
@@ -42,43 +29,12 @@
       <section class="threads-panel">
         <h2>Monitor de Threads</h2>
         <p class="threads-help">
-          São 9 threads para linhas, 9 para colunas e 9 para sub-grids. Cada uma trabalha isoladamente e
+          Sao 9 threads para linhas, 9 para colunas e 9 para sub-grids. Cada uma trabalha isoladamente e
           reporta o resultado aqui.
         </p>
         <ul id="thread-log" class="thread-log" aria-live="polite"></ul>
       </section>
     </main>
-
-    <section class="insight">
-      <h2>Como funciona</h2>
-      <div class="insight-grid">
-        <article>
-          <h3>Interface viva</h3>
-          <p>
-            Digite diretamente nas células vazias. Valores originais do desafio ficam bloqueados e citados
-            com fundo translúcido.
-          </p>
-        </article>
-        <article>
-          <h3>Validação distribuída</h3>
-          <p>
-            Ao clicar em <strong>Rodar Threads</strong>, disparamos 27 Web Workers. Cada worker recebe apenas
-            a fatia relevante do tabuleiro e devolve se encontrou algum conflito.
-          </p>
-        </article>
-        <article>
-          <h3>Feedback direcionado</h3>
-          <p>
-            Células problematicas são destacadas indicando que a thread correspondente encontrou valores
-            repetidos, inválidos ou ausentes.
-          </p>
-        </article>
-      </div>
-    </section>
-
-    <footer class="footer">
-      Construído em HTML, CSS e JavaScript puro — sem dependências externas.
-    </footer>
   </div>
 
   <script src="script.js" type="module"></script>

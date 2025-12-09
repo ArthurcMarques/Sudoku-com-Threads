@@ -1,40 +1,40 @@
-self.onmessage = (event) => {
-  const { kind, index, cells, ignoreEmpty = false } = event.data;
-  const seen = new Map();
-  const invalidPositions = [];
-  const duplicateRegistry = new Set();
+self.onmessage = (evento) => {
+  const { tipo, indice, celulas, ignorarVazios = false } = evento.data;
+  const vistos = new Map();
+  const posicoesInvalidas = [];
+  const registroDuplicados = new Set();
 
-  cells.forEach((cell) => {
-    const value = Number(cell.value);
-    const basePayload = { row: cell.row, col: cell.col };
+  celulas.forEach((celula) => {
+    const valor = Number(celula.valor);
+    const basePayload = { linha: celula.linha, coluna: celula.coluna };
 
-    if (!Number.isInteger(value) || value === 0) {
-      if (!ignoreEmpty) {
-        invalidPositions.push({ ...basePayload, issue: "empty" });
+    if (!Number.isInteger(valor) || valor === 0) {
+      if (!ignorarVazios) {
+        posicoesInvalidas.push({ ...basePayload, problema: "vazia" });
       }
       return;
     }
 
-    if (value < 1 || value > 9) {
-      invalidPositions.push({ ...basePayload, issue: "invalid" });
+    if (valor < 1 || valor > 9) {
+      posicoesInvalidas.push({ ...basePayload, problema: "invalida" });
       return;
     }
 
-    if (seen.has(value)) {
-      const previous = seen.get(value);
-      const previousKey = `${previous.row}-${previous.col}`;
-      if (!duplicateRegistry.has(previousKey)) {
-        invalidPositions.push({ row: previous.row, col: previous.col, issue: "duplicate" });
-        duplicateRegistry.add(previousKey);
+    if (vistos.has(valor)) {
+      const anterior = vistos.get(valor);
+      const chaveAnterior = `${anterior.linha}-${anterior.coluna}`;
+      if (!registroDuplicados.has(chaveAnterior)) {
+        posicoesInvalidas.push({ linha: anterior.linha, coluna: anterior.coluna, problema: "duplicada" });
+        registroDuplicados.add(chaveAnterior);
       }
-      invalidPositions.push({ ...basePayload, issue: "duplicate" });
+      posicoesInvalidas.push({ ...basePayload, problema: "duplicada" });
     } else {
-      seen.set(value, basePayload);
+      vistos.set(valor, basePayload);
     }
   });
 
-  const valid = ignoreEmpty
-    ? invalidPositions.length === 0
-    : invalidPositions.length === 0 && seen.size === 9;
-  self.postMessage({ kind, index, valid, invalidPositions });
+  const valido = ignorarVazios
+    ? posicoesInvalidas.length === 0
+    : posicoesInvalidas.length === 0 && vistos.size === 9;
+  self.postMessage({ tipo, indice, valido, posicoesInvalidas });
 };
