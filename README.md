@@ -1,16 +1,16 @@
-﻿# Validador de Solucao de Sudoku com Multithreading
+﻿# Validador de Solução de Sudoku com Multithreading
 
-## Informacoes Academicas
+## Informações Academicas
 
 **Universidade:** Pontificia Universidade Catolica de Goias  
 **Escola:** Escola Politecnica e de Artes  
 **Disciplina:** CMP2351 - Sistemas Operacionais I  
 **Professora:** Angelica da Silva Nunes  
+**Projeto:** AED - Validador de Solucao de Sudoku
 **Alunos Responsaveis:**  
 - Arthur Cardoso Marques  
 - Maria Rita Verissimo  
 - Jennifer Vitoria da Silva Peixoto  
-**Projeto:** AED - Validador de Solucao de Sudoku
 
 ---
 
@@ -24,13 +24,7 @@
 6. [Como Executar](#como-executar)
 7. [Como Usar](#como-usar)
 8. [Implementacao Tecnica](#implementacao-tecnica)
-9. [Decisoes de Design](#decisoes-de-design)
-10. [Possiveis Melhorias](#possiveis-melhorias)
-11. [Metricas do Projeto](#metricas-do-projeto)
-12. [Conceitos de Sistemas Operacionais Aplicados](#conceitos-de-sistemas-operacionais-aplicados)
-13. [Conclusao](#conclusao)
-14. [Referencias](#referencias)
-15. [Contato](#contato)
+9. [Conceitos de Sistemas Operacionais Aplicados](#conceitos-de-sistemas-operacionais-aplicados)
 
 ---
 
@@ -164,7 +158,10 @@ Sudoku_Threads/
 - Navegador moderno (Chrome, Firefox, Edge, Safari).
 - Servidor web local (Web Workers nao funcionam via `file://`).
 
-### Opcao 1: Usando Python (Recomendado)
+### Opcao 1: Acessando a página no github pages (Recomendado)
+https://arthurcmarques.github.io/Sudoku-com-Threads/
+
+### Opcao 2: Usando Python
 
 ```bash
 # Navegue ate a pasta do projeto
@@ -177,7 +174,7 @@ python -m http.server 8000
 http://localhost:8000
 ```
 
-### Opcao 2: Usando Node.js
+### Opcao 3: Usando Node.js
 
 ```bash
 npm install -g http-server
@@ -185,7 +182,7 @@ http-server -p 8000
 # Acesse em http://localhost:8000
 ```
 
-### Opcao 3: Usando VS Code
+### Opcao 4: Usando VS Code
 
 1. Instale a extensao "Live Server".
 2. Clique com o botao direito em `index.html`.
@@ -269,70 +266,6 @@ self.onmessage = ({ data }) => {
 
 ---
 
-## Decisoes de Design
-
-- **27 threads (linha/coluna/sub-grade):** maxima clareza didatica e paralelismo pleno.
-- **Validacao incremental:** ao digitar, usamos `ignoreEmpty` para alertar apenas duplicatas sem exigir tabuleiro completo.
-- **Geracao de desafios aleatorios:** evita depender de arquivos estaticos de exemplo.
-- **Destaques contextuais:** tooltips indicam se e duplicado, vazio ou valor fora do intervalo.
-
-### Alternativas Consideradas
-
-- **3 threads (linha, coluna, sub-grades):** menos paralelismo e pouca visibilidade.
-- **11 threads (1 para linhas, 1 para colunas, 9 para sub-grades):** distribuicao desigual de trabalho.
-- **27 threads (adotado):** melhor visualizacao e balanceamento.
-
-### Tratamento de Erros
-
-- Sanitizacao de entrada (apenas digitos 1-9).
-- `try...catch` em chamadas assincronas.
-- Mensagens de status claras na UI em caso de falha.
-
-### Performance
-
-- Workers liberados imediatamente apos responder (`terminate`).
-- Validacao completa tipica em poucos milissegundos em maquinas modernas.
-
----
-
-## Possiveis Melhorias
-
-### Funcionalidades Adicionais
-
-1. **Salvar/Carregar Sudoku:** persistir progresso no `localStorage`.
-2. **Gerador com dificuldades:** diferentes niveis ao mascarar o tabuleiro.
-3. **Solver automatico:** resolver e mostrar passos.
-4. **Dicas inteligentes:** sugerir proximo movimento.
-
-### Melhorias Tecnicas
-
-1. **TypeScript:** tipos mais seguros para payloads das threads.
-2. **Testes automatizados:** testes unitarios para `validatorWorker` e geracao de puzzles.
-3. **Thread pool:** reusar workers para reduzir overhead de criacao.
-4. **PWA:** suporte offline e instalacao.
-
-### Otimizacoes
-
-1. **SharedArrayBuffer:** evitar copia de dados grandes entre threads.
-2. **WebAssembly:** validar unidades mais rapidamente em dispositivos menos potentes.
-
----
-
-## Metricas do Projeto
-
-### Complexidade
-
-- **Linhas de codigo:** ~500 (HTML + CSS + JS + Worker).
-- **Arquivos:** 4 arquivos principais.
-- **Workers:** 27 por validacao completa; 3 por celula editada.
-
-### Performance tipica
-
-- **Tempo de validacao:** dezenas de milissegundos para tabuleiros completos.
-- **Memoria:** baixa, apenas matrizes 9x9 e payloads leves.
-
----
-
 ## Conceitos de Sistemas Operacionais Aplicados
 
 ### 1. Multithreading
@@ -352,35 +285,6 @@ self.onmessage = ({ data }) => {
 ### 5. Sincronizacao
 - `Promise.all` para aguardar todas as threads e consolidar o resultado.
 
----
-
-## Conclusao
-
-O projeto demonstra, de forma pratica, **paralelismo com 27 threads independentes** validando um Sudoku. Web Workers garantem execucao paralela verdadeira no navegador, enquanto a UI destaca conflitos e mostra o tempo gasto por cada unidade.
-
-### Aprendizados Principais
-
-1. Criacao, disparo e termino de multiplas threads.
-2. Comunicacao assincrona entre threads e thread principal.
-3. Beneficios do processamento paralelo em um problema classico.
-4. Sincronizacao e agregacao de resultados com Promises.
-5. Boas praticas de UX para feedback imediato.
-
----
-
-## Referencias
-
-- SILBERSCHATZ, A.; GALVIN, B. P.; GAGNE, G. **Fundamentos de sistemas operacionais**. 8. ed. Rio de Janeiro: Elsevier/Campus, 2013.
-- MDN Web Docs: **Web Workers API**.
-- JavaScript.info: **Web Workers**.
-
----
-
-## Contato
-
-Projeto desenvolvido para fins academicos.
-
-**Pontificia Universidade Catolica de Goias**  
 Escola Politecnica e de Artes  
 CMP2351 - Sistemas Operacionais I
 
